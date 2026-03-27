@@ -1,93 +1,60 @@
-# Yuclaw-Trust — ZKP Cryptographic Audit Vault
+# YUCLAW Trust — ZKP Signal Verification
 
-**Zero-knowledge proof audit trail for AI-driven financial decisions.**
+Verify any YUCLAW signal has a cryptographic proof on Ethereum Sepolia.
 
-Every YUCLAW decision is cryptographically sealed with zk-SNARK proofs — proving compliance without revealing proprietary strategy logic.
-
-## Overview
-
-Yuclaw-Trust provides tamper-proof auditability for the YUCLAW ATROS system. Each AI decision (research conclusion, strategy validation, trade signal) is hashed, timestamped, and anchored with a zero-knowledge proof that verifies computational integrity without exposing model weights or prompt content.
-
-## Key Features
-
-- **zk-SNARK proofs** — prove a decision followed the stated policy without revealing the policy
-- **SHA-256 hash chain** — append-only ledger with cryptographic linking
-- **Audit receipts** — unique receipt ID for every decision, queryable and verifiable
-- **Regulatory ready** — structured export for compliance review (MiFID II, SEC)
-- **Offline verifiable** — proofs can be checked without access to the original model
-
-## Architecture
-
-```
-YUCLAW Decision
-       │
-       ▼
-┌──────────────┐
-│  Hash Engine │──▶ SHA-256 chain
-│  (decision)  │
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│  ZKP Circuit │──▶ zk-SNARK proof
-│  (Groth16)   │
-└──────┬───────┘
-       │
-       ▼
-┌──────────────┐
-│ Audit Ledger │──▶ SQLite + JSON export
-│ (immutable)  │
-└──────────────┘
-```
-
-## Audit Receipt Format
-
-```json
-{
-  "receipt_id": "rcpt_1773720203958717811_e8d726d8",
-  "timestamp": "2026-03-16T21:57:03Z",
-  "decision_type": "strategy_validation",
-  "verdict": "REJECTED",
-  "hash": "e8d726d8517b9c9e...",
-  "proof": "groth16:base64...",
-  "verifiable": true
-}
-```
-
-## Usage
-
-```python
-from yuclaw_trust import AuditVault
-
-vault = AuditVault("audit.db")
-
-# Seal a decision
-receipt = vault.seal(
-    decision_type="research",
-    ticker="AAPL",
-    verdict="BUY",
-    evidence_hashes=["abc123...", "def456..."]
-)
-
-# Verify
-assert vault.verify(receipt.receipt_id)
-
-# Export for compliance
-vault.export_json("audit_export.json")
-```
-
-## Verification
-
+## Verify a signal
 ```bash
-# Verify any receipt offline
-python -m yuclaw_trust.verify --receipt rcpt_1773720203958717811_e8d726d8
-# Output: VALID — decision integrity confirmed
+git clone https://github.com/YuClawLab/yuclaw-trust
+cd yuclaw-trust
+python3 verify.py LUNR
 ```
 
-## Part of YUCLAW ATROS
+Output:
+```
+YUCLAW Trust — Verifying LUNR
+========================================
+  Local proof found
+  Hash: 36980a0bb5f89dc3258970977b76d9c7...
+  On-chain: YES
+  Block: 10515603
+  Explorer: https://sepolia.etherscan.io/tx/651aa6b4...
+```
 
-This is a component of the [YUCLAW ATROS](https://github.com/YuClawLab/yuclaw-brain) financial intelligence system.
+## List all proofs
+```bash
+python3 verify.py
+```
 
-## License
+## Verified signals
 
-Proprietary — YuClawLab
+| Ticker | Signal | Block | Date |
+|---|---|---|---|
+| LUNR | STRONG_BUY | 10515603 | 2026-03-24 |
+| ASTS | STRONG_BUY | 10515603 | 2026-03-24 |
+| MRNA | STRONG_BUY | 10515603 | 2026-03-24 |
+| LUNR | +14.68% CORRECT | 10515734 | 2026-03-24 |
+| DELL | +4.01% CORRECT | 10515736 | 2026-03-24 |
+| LUNR | Day 3 CORRECT | 10522560 | 2026-03-25 |
+
+## What this proves
+
+- YUCLAW generated a signal for this ticker
+- The signal was recorded with a cryptographic hash
+- The proof is permanently on Ethereum Sepolia blockchain
+- The proof cannot be faked or altered after the fact
+
+No other AI trading system has verifiable proof of its signals.
+
+## Connect to YUCLAW
+```bash
+pip install yuclaw
+yuclaw zkp        # Show ZKP proofs
+yuclaw signals    # Show current signals
+yuclaw start      # Start all engines
+```
+
+## Links
+
+- Dashboard: https://yuclawlab.github.io/yuclaw-brain
+- GitHub: https://github.com/YuClawLab
+- Wallet: 0x2c7736822714887143d524e6409b0cFDdaE86005
