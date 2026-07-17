@@ -1,4 +1,7 @@
 /*
+ * HISTORICAL — no longer planned (killed v3.0). The ledger is git-anchored
+ * SHA-256 only; do not build against this circuit.
+ *
  * yuclaw-trust/circuits/compliance.circom
  *
  * Zero-Knowledge Compliance Proof Circuit
