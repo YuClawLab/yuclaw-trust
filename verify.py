@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-YUCLAW Trust — Signal Verification Tool
+YUCLAW Trust — HISTORICAL proof-file inspector (March 2026 experiment, retired v3.0).
 Usage: python3 verify.py LUNR
-Checks if a YUCLAW signal has a valid ZKP proof on Ethereum Sepolia.
+Inspected local proof files for hashes that were anchored on Ethereum Sepolia
+during the March 2026 experiment. Anchoring was retired at v3.0; the live
+ledger is verified_research_ledger.jsonl — check it with `yuclaw replay-lab`
+or `yuclaw verify TICKER --date DATE`.
 """
 import sys
 import json

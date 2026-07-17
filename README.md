@@ -2,134 +2,120 @@
 
 # YUCLAW-TRUST
 
-**Hash-Anchored Audit Trail + ZKP Design Specification**
+**Git-Anchored Verified Research Ledger**
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
-![Network](https://img.shields.io/badge/network-Ethereum_Sepolia-627EEA)
-![Audit](https://img.shields.io/badge/audit-SHA--256_hash_chain-orange)
-![Status](https://img.shields.io/badge/status-design_spec-yellow)
+![Ledger](https://img.shields.io/badge/ledger-git--anchored-blue)
+![Audit](https://img.shields.io/badge/audit-SHA--256_daily_roots-orange)
+![Status](https://img.shields.io/badge/status-live_daily-green)
 ![License](https://img.shields.io/badge/license-MIT-red)
 
-> SHA-256 hash chain of YUCLAW signal decisions, with selected hashes
-> anchored on Ethereum Sepolia testnet by yuclaw-brain. Includes a Circom 2.0
-> design specification for a future zk-SNARK compliance circuit.
+> SHA-256 hash-chain audit log for YUCLAW research signals.
+> Git-anchored — clone and verify independently.
 
 </div>
 
 ---
 
-> **Status — partial implementation, design-spec for zk-SNARK**
->
-> | What is real today | What is on the roadmap |
-> |---|---|
-> | SHA-256 hash chain of decision payloads (`scripts/prove.py`) | Compiled zk-SNARK circuit with proving + verification keys |
-> | Local proof-file inspection (`verify.py`) | On-chain proof verification (calling Sepolia from `verify.py` directly) |
-> | Selected hashes anchored on Sepolia by yuclaw-brain | Anchoring every signal automatically |
-> | Circom 2.0 design spec for a compliance circuit | Circuit compiled, witness generator, trusted setup |
->
-> The hash chain and the on-chain anchoring are working today. The Groth16
-> zk-SNARK proof generation described in the Circom file is **not yet wired
-> up** — current proofs are SHA-256 hash anchors, not zk-SNARK proofs of
-> strategy correctness.
+## The live artifact: `verified_research_ledger.jsonl`
+
+This file is the Verified Research Ledger. It is written **daily by
+[yuclaw-brain](https://github.com/YuClawLab/yuclaw-brain) before its public
+pages update** (one commit per trading day, e.g.
+`ledger: 2026-07-16 — 79 signals, root 6989db4d3ee7`), so the git history of
+this repository is the tamper-evidence: editing a past day would rewrite
+published commits.
+
+One JSON line per day:
+
+```json
+{"date": "2026-07-16",
+ "generated_at": "2026-07-16T23:00:05+00:00",
+ "snapshot_count": 79,
+ "daily_root": "6989db4d3ee7f22e9a8bedfecabfcbdfe539abf6245ff9974f334524690e4ff1",
+ "entries": [{"ticker": "AAPL",
+              "snapshot_id": "snap_AAPL_92b30577f9dd8cc6",
+              "signal_label": "WATCH",
+              "content_hash": "9ce0d0d9…"}, "…"]}
+```
+
+- **`content_hash`** — sha-256 of each signal snapshot's canonical content.
+- **`daily_root`** — sha-256 over the day's sorted, `|`-joined content
+  hashes: one 64-hex root per day. Sorting makes the root independent of
+  database row order.
+
+### Clone and verify
+
+```bash
+# Reproduce every published Validation Lab statistic AND recompute every
+# ledger leaf + daily root against this repository:
+pip install yuclaw
+yuclaw replay-lab            # exit 0 = statistics and roots reproduced
+
+# Standalone path (Python ≥ 3.10 stdlib only, no installs):
+curl -sO https://yuclawlab.github.io/yuclaw-brain/replay/lab_replay_bundle.json
+curl -sO https://raw.githubusercontent.com/YuClawLab/yuclaw-brain/main/tools/replay_lab.py
+python3 replay_lab.py lab_replay_bundle.json
+
+# Check one signal on one date against its ledger row:
+yuclaw verify AAPL --date 2026-07-16
+```
+
+`yuclaw replay-lab` recomputes each leaf hash and each daily root from
+published derived data and compares them to this file; any mismatch exits
+non-zero with a diff report. `yuclaw verify` checks a single snapshot's
+content hash against its ledger entry. Both check **record integrity and
+timing — not investment merit.**
 
 ---
 
-## What this repo contains
+## Historical experiments — March 2026, retired
 
-| File | Purpose | LOC |
-|---|---|---:|
-| `scripts/prove.py` | SHA-256 hash-chain proof generator | 152 |
-| `verify.py` | Local proof-file inspector | 84 |
-| `circuits/compliance.circom` | Circom 2.0 circuit design spec (not compiled) | 85 |
+Before v3.0, YUCLAW experimented with on-chain anchoring and a zk-SNARK
+design. These artifacts are preserved as historical record; none of them
+runs today.
 
-Total: **321 lines** across two Python scripts and one Circom source.
+| File | What it was |
+|---|---|
+| `scripts/prove.py` | SHA-256 hash-chain proof generator (historical) |
+| `verify.py` | Local inspector for the retired proof files (historical) |
+| `circuits/compliance.circom` | Circom 2.0 design artifact — no longer planned (see its in-file HISTORICAL note) |
 
----
+### Sepolia anchors (historical record)
 
-## What's actually anchored on Sepolia
-
-The yuclaw-brain pipeline publishes selected signal-decision hashes to
-Ethereum Sepolia testnet. Several real anchors exist; example:
+During the March 2026 experiment, selected hashes were published to
+Ethereum Sepolia testnet by yuclaw-brain. The anchors remain visible
+on-chain; block numbers preserved verbatim:
 
 | Block | Date | Anchor |
 |:---|:---:|:---|
-| 10515603 | 2026-03-24 | Batch of STRONG_BUY signal hashes |
-| 10515736 | 2026-03-24 | Follow-up batch |
-| 10522560 | 2026-03-25 | Day 3 audit anchor |
+| 10515603 | 2026-03-24 | signal-decision hash batch (pre-v3 label vocabulary) |
+| 10515736 | 2026-03-24 | signal-decision hash batch (pre-v3 label vocabulary) |
+| 10522560 | 2026-03-25 | signal-decision hash batch (pre-v3 label vocabulary) |
 
-Each anchor stores a hash of the signal-decision payload — **not** a
-zk-SNARK proof. The on-chain record proves that the hash existed at that
-block height; it does not (yet) prove the underlying strategy was
-compliant in zero knowledge.
+Each anchor stored a hash of a signal-decision payload — not a zk-SNARK
+proof. They can still be confirmed on
+[Ethereum Sepolia Etherscan](https://sepolia.etherscan.io); the last
+anchors were published during the March 2026 experiment, and anchoring was
+retired at v3.0.
 
-You can confirm anchors directly on [Ethereum Sepolia
-Etherscan](https://sepolia.etherscan.io).
+### `scripts/prove.py` (historical)
 
----
+The hash-chain prover generated `ComplianceProof` records around a
+position/portfolio risk-limit example. That example was a design-era demo:
+**YUCLAW is research-only and holds no positions.** The Groth16 path in its
+docstring was never wired up — no proving key, verification key, or witness
+generator was ever shipped.
 
-## Inspect local proofs
+### `circuits/compliance.circom` (historical)
 
-```bash
-git clone https://github.com/YuClawLab/yuclaw-trust
-cd yuclaw-trust
-python3 verify.py
-python3 verify.py LUNR
-```
+A Circom 2.0 design artifact for a risk-limit circuit (public
+`risk_limit_bps`; private `position_size`, `portfolio_value`,
+`trade_pnl`). It was never compiled and is no longer planned — the file
+carries the same HISTORICAL note at the top of its source.
 
-`verify.py` is a local audit-log inspector. It reads proof files at
-`~/yuclaw/output/zkp_onchain/*.json` and prints their hash and recorded
-anchor metadata. The on-chain anchoring is performed by yuclaw-brain when
-the signal is first recorded, and the Etherscan transaction is the source
-of truth. To verify the on-chain anchor directly, follow the Etherscan link
-in the table above.
-
----
-
-## Generate a hash-chain proof
-
-```bash
-python3 scripts/prove.py --position 50000 --portfolio 1000000 --limit 500
-```
-
-This generates a SHA-256-chained `ComplianceProof` record claiming that a
-$50K position in a $1M portfolio is within a 5% (500 bps) risk limit. The
-proof is appended to a local `audit_proofs.json` ledger; each entry chains
-to the previous entry's hash.
-
-Output `proof_type` is currently always `"hash_chain"`. The Groth16 path
-described in the docstring activates when a compiled Circom artifact + key
-material is present — neither is shipped today.
-
----
-
-## The Circom design spec
-
-`circuits/compliance.circom` is a Circom 2.0 specification for a
-compliance circuit:
-
-- **Public input**: `risk_limit_bps` (e.g., 500 = 5%)
-- **Private inputs**: `position_size`, `portfolio_value`, `trade_pnl`
-- **Constraint**: `position_size · 10000 ≤ portfolio_value · risk_limit_bps`
-
-When compiled with a trusted setup, this circuit would let a prover
-demonstrate "my trade was within the risk limit" without revealing the
-position size or portfolio value. **No proving key, verification key, or
-witness generator is in this repository**, so the circuit is currently a
-design artifact, not an executable proof system.
-
----
-
-## Honest framing
-
-What we have today: **a tamper-evident audit log.** Each decision is
-hashed; hashes chain; selected hashes are anchored on Sepolia. Anyone can
-verify a hash exists at a block height and matches a published decision.
-
-What we do **not** yet have: a zero-knowledge proof of strategy
-correctness. Calling our current artifact a "zk-SNARK proof" overstates
-what's running. The Circom circuit is the design for that future system;
-turning it on means compiling the circuit, running a trusted setup, and
-wiring the witness generator into `prove.py`.
+On-chain and zero-knowledge directions were retired at v3.0 in favor of the
+public git ledger above.
 
 ---
 
@@ -140,8 +126,8 @@ wiring the witness generator into `prove.py`.
 | Production pipeline | [yuclaw-brain](https://github.com/YuClawLab/yuclaw-brain) |
 | Live dashboard | [yuclawlab.github.io/yuclaw-brain](https://yuclawlab.github.io/yuclaw-brain) |
 | PyPI | [pypi.org/project/yuclaw](https://pypi.org/project/yuclaw) |
-| Anchoring wallet | `0x2c7736822714887143d524e6409b0cFDdaE86005` |
-| Explorer | [Ethereum Sepolia](https://sepolia.etherscan.io) |
+| Historical anchoring wallet (retired) | `0x2c7736822714887143d524e6409b0cFDdaE86005` |
+| Explorer | [Ethereum Sepolia](https://sepolia.etherscan.io) (historical anchors) |
 
 ---
 
@@ -149,10 +135,10 @@ wiring the witness generator into `prove.py`.
 
 YUCLAW is open-source research and educational software. **It is NOT
 financial advice or a recommendation to buy or sell any security.** Hash
-anchoring on a testnet establishes timestamped existence of a payload; it
-does not by itself imply the underlying strategy is profitable, compliant
-in your jurisdiction, or suitable for any investment purpose. Trading
-involves substantial risk of loss.
+anchoring establishes timestamped existence of a payload; it does not by
+itself imply the underlying research is profitable, compliant in your
+jurisdiction, or suitable for any investment purpose. Trading involves
+substantial risk of loss.
 
 For educational and research purposes only. MIT Licensed.
 
@@ -160,6 +146,7 @@ For educational and research purposes only. MIT Licensed.
 
 <div align="center">
 
-*Every YUCLAW signal-decision hash, anchored on Sepolia by yuclaw-brain.*
+*Every YUCLAW signal snapshot, hashed daily into a public git ledger —
+clone and verify independently.*
 
 </div>
